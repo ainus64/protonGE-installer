@@ -1,0 +1,257 @@
+#!/bin/bash
+# Program: ProtonGEInstaller
+# Author: Ainus64 (Mis Juegos En Linux)
+#
+# Dependencias: dialog, zenity, kdialog
+
+# Variables de entorno
+# Necesarias para cargar la base de datos json
+valor0=`jq -r '.ProtonGE[0].release' db.json`
+valor1=`jq -r '.ProtonGE[1].release' db.json`
+valor2=`jq -r '.ProtonGE[2].release' db.json`
+valor3=`jq -r '.ProtonGE[3].release' db.json`
+valor4=`jq -r '.ProtonGE[4].release' db.json`
+valor5=`jq -r '.ProtonGE[5].release' db.json`
+valor6=`jq -r '.ProtonGE[6].release' db.json`
+valor7=`jq -r '.ProtonGE[7].release' db.json`
+valor8=`jq -r '.ProtonGE[8].release' db.json`
+valor9=`jq -r '.ProtonGE[9].release' db.json`
+URL=""
+DE=$(echo "${DESKTOP_SESSION}")
+GUI=('terminal' 'gnome-xorg' 'plasmawayland' 'lxqt' )
+
+# Comprobar si tienes KDE o Gnome
+# Proceso de Identificación del escritorio
+# Esto determinará si usar Zenity, Dialog o Kdialog.
+_check_session(){
+if [[ "${DE}" == "${GUI[0]}" ]]
+    then
+        echo "Log: Modo Terminal!"
+        _mainMenu_Terminal
+elif [[ "${DE}" == "${GUI[1]}" ]]
+    then
+        echo "Log: Gnome Detectado!"
+        _mainMenu_GTK
+
+elif [[ "${DE}" == "${GUI[2]}" ]]
+    then
+        echo "Log: KDE Detectado!"
+        _mainMenu_KDE
+else
+    echo "Log: No se ha detectado el escritorio que estas usando."
+    echo "Log: Cargando menú Default"
+    _mainMenu_GTK
+fi
+}
+
+_check_steam_folder_proton(){
+# Se comprueba la existencia de la carpeta compatibilitytools.d
+# sin ella no aparecerá ProtonGE en Steam.
+    if [ -d "${HOME}/.local/share/Steam/compatibilitytools.d" ];
+        then
+            echo "Carpeta encontrada."
+        else
+            echo "Log: Preparando la carpeta de Steam para instalar ProtonGE"
+            mkdir -p ${HOME}/.local/share/Steam/compatibilitytools.d
+    fi
+}
+${ProtonGE}
+# Aquí se estable la URL de descarga correspondiente
+# con la versión de ProtonGE seleccionada.
+_check_url () {
+    if [[ "${valor0}" == "${ProtonGE}" ]]
+        then
+            URL=`jq -r '.ProtonGE[0].url' db.json`
+            echo "Log: La URL es: ${URL}"
+    elif [[ "${valor1}" == "${ProtonGE}" ]]
+        then
+            URL=`jq -r '.ProtonGE[1].url' db.json`
+            echo "Log: La URL es: ${URL}"
+     elif [[ "${valor2}" == "${ProtonGE}" ]]
+        then
+            URL=`jq -r '.ProtonGE[2].url' db.json`
+            echo "Log: La URL es: ${URL}"
+    elif [[ "${valor3}" == "${ProtonGE}" ]]
+        then
+            URL=`jq -r '.ProtonGE[3].url' db.json`
+            echo "Log: La URL es: ${URL}"
+    elif [[ "${valor4}" == "${ProtonGE}" ]]
+        then
+            URL=`jq -r '.ProtonGE[4].url' db.json`
+            echo "Log: La URL es: ${URL}"
+    elif [[ "${valor5}" == "${ProtonGE}" ]]
+        then
+            URL=`jq -r '.ProtonGE[5].url' db.json`
+            echo "Log: La URL es: ${URL}"
+    elif [[ "${valor6}" == "${ProtonGE}" ]]
+        then
+            URL=`jq -r '.ProtonGE[6].url' db.json`
+            echo "Log: La URL es: ${URL}"
+    elif [[ "${valor7}" == "${ProtonGE}" ]]
+        then
+            URL=`jq -r '.ProtonGE[7].url' db.json`
+            echo "Log: La URL es: ${URL}"
+    elif [[ "${valor8}" == "${ProtonGE}" ]]
+        then
+            URL=`jq -r '.ProtonGE[8].url' db.json`
+            echo "Log: La URL es: ${URL}"
+    elif [[ "${valor9}" == "${ProtonGE}" ]]
+        then
+            URL=`jq -r '.ProtonGE[9].url' db.json`
+            echo "Log: La URL es: ${URL}"
+    else
+        echo "Log: Error La princesa está en otro castillo."
+        break
+    fi
+}
+
+# Texto de información o ayuda del programa
+# Sólo se mostrará si se ejecuta por terminal
+# hay que arreglar el idioma mostrado.
+_help(){
+    cat <<EOL
+ProtonGE Installer Script (Version 0.1)
+Author: Ainus64 (Mis Juegos En Linux)
+
+Use ./ProtonGeInstaller to launch the Graphical Interface
+
+Options:
+
+-h / --help / -help  -  Show this text
+-t     -  Launch Terminal Only GUI (WIP)
+-g     -  Launch Installer with GTK GUI
+-k     -  Launch Installer with QT GUI (WIP)
+EOL
+}
+
+_install(){
+# Carpetas de instalación
+# Steam /home/user/.local/share/Steam/compatibilitytools.d
+# Lutris /home/user/.local/share/lutris/runners/wine
+# enlace a la carpeta de lutris /home/ainus/.local/share/Steam/compatibilitytools.d/Proton-7.0rc2-GE-1/files
+    
+    # Comprueba que existe la carpeta de Steam
+    if [ -d "${HOME}/.steam" ];
+        then
+            echo "Steam detectado."
+            STEAM="true"
+        else
+            STEAM="false"
+    fi
+
+    # Comprueba que existe la carpeta de Lutris.
+    if [ -d "${HOME}/.local/share/lutris" ];
+        then
+            echo "Lutris detectado."
+            LUTRIS="true"
+        else
+            LUTRIS="false"
+    fi
+    
+    # Ahora se comprueba si tienes ambos sistemas o uno solo de ellos
+    # en tal caso se mostrará la ventana correspondiente según sea el caso.
+    # en Caso de sólo existir Steam, muestra una ventana sólo para Steam
+    # en caso de Sólo existir Lutris, muestra una ventana sólo para Lutris.
+    # Si existen ambos, muestra una ventana para instalar ambos.
+    if [[ ${STEAM} == true ]] && [[ ${LUTRIS} == true ]]
+        then
+            echo "¿Quieres instalarlo en Ambos?"
+            _install_All_GTK
+    elif [[ ${STEAM} == true ]] && [[ ${LUTRIS} == false ]]
+        then
+        echo " Se va a instalar solo en Steam"
+        _install_Steam_GTK
+    elif [[ ${STEAM} = false ]] && [[ ${LUTRIS} = true ]]
+        then
+        echo "Se va a instalar solo en Lutris"
+        _install_Lutris_GTK
+    else
+        echo " no tienes ni Steam ni Lutris instalado, Salir"
+        break
+    fi
+}
+
+_install_Lutris_GTK(){
+    echo "Solo lutris"
+}
+
+_install_Steam_GTK(){
+    echo "solo steam"
+}
+
+_install_All_GTK(){
+    componente=$(zenity --list \
+                    --title="ProtonGE-${ProtonGE} Installer" \
+                    --height=300 \
+                    --width=200 \
+                    --ok-label="Aceptar" \
+                    --cancel-label="Cancelar" \
+                    --text="Has Seleccionado ProtonGE-${ProtonGE}\n Selecciona donde quieres instalarlo." \
+                    --checklist \
+                    --column="" \
+                    --column="Opciones:" \
+                    1 "Steam" 2 "Lutris")
+ans=$?
+if [ $ans -eq 0 ]
+then
+    echo "Has elegido: ${componente}"
+else
+    echo "No has elegido ningún componente"
+fi 
+}
+# Menu Terminal
+_mainMenu_Terminal(){
+    echo "Aquí va la interfaz para la terminal"
+}
+
+# Menu Terminal
+_mainMenu_KDE(){
+    echo "Aquí va la interfaz de KDE"
+}
+
+# Menu por defecto (Gnome, Cinnamon, LXDE or Unknow DE)
+_mainMenu_GTK(){
+componente=$(zenity --list \
+                    --title="ProtonGE Installer" \
+                    --height=300 \
+                    --width=100 \
+                    --ok-label="Aceptar" \
+                    --cancel-label="Cancelar" \
+                    --text="Bienvenidos a ProtonGE Installer \nSelecciona la versión que quieres instalar" \
+                    --radiolist \
+                    --column="" \
+                    --column="ProtonGE Release" \
+                    1 "${valor0}" 2 "${valor1}" 3 "${valor2}" 4 "${valor3}" 5 "${valor4}" 6 "${valor5}" 7 "${valor6}" 8 "${valor7}" 9 "${valor8}" 10 "${valor9}")
+ans=$?
+if [ $ans -eq 0 ]
+then
+    ProtonGE="${componente}"
+    echo "Log: Seleccionado ProtonGE: ${ProtonGE}"
+    _check_url
+    _install
+else
+    echo "Log: Saliendo."
+fi
+}
+
+
+case $1 in
+    -g)
+        DE="${GUI[0]}"
+        _check_session
+        ;;
+    -k)
+        DE="${GUI[1]}"
+        _check_session
+        ;;
+    -t)
+        DE="${GUI[2]}"
+        _check_session
+        ;;
+    --help|-help|-h)
+        _help
+        ;;
+    *)
+        _check_session
+        ;;
+esac

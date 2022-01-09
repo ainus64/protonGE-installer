@@ -5,44 +5,27 @@
 # Dependencias: dialog, zenity, kdialog
 
 # Variables de entorno
-# Necesarias para cargar la base de datos json
-valor0=`jq -r '.ProtonGE[0].release' db.json`
-valor1=`jq -r '.ProtonGE[1].release' db.json`
-valor2=`jq -r '.ProtonGE[2].release' db.json`
-valor3=`jq -r '.ProtonGE[3].release' db.json`
-valor4=`jq -r '.ProtonGE[4].release' db.json`
-valor5=`jq -r '.ProtonGE[5].release' db.json`
-valor6=`jq -r '.ProtonGE[6].release' db.json`
-valor7=`jq -r '.ProtonGE[7].release' db.json`
-valor8=`jq -r '.ProtonGE[8].release' db.json`
-valor9=`jq -r '.ProtonGE[9].release' db.json`
+
+# Carga la base de datos.
+valor0=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[0].release'`
+valor1=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[1].release'`
+valor2=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[2].release'`
+valor3=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[3].release'`
+valor4=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[4].release'`
+valor5=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[5].release'`
+valor6=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[6].release'`
+valor7=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[7].release'`
+valor8=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[8].release'`
+valor9=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[9].release'`
 URL=""
-DE=$(echo "${DESKTOP_SESSION}")
-GUI=('terminal' 'gnome-xorg' 'plasmawayland' 'lxqt' )
 
-# Comprobar si tienes KDE o Gnome
-# Proceso de Identificación del escritorio
-# Esto determinará si usar Zenity, Dialog o Kdialog.
-_check_session(){
-if [[ "${DE}" == "${GUI[0]}" ]]
-    then
-        echo "Log: Modo Terminal!"
-        _mainMenu_Terminal
-elif [[ "${DE}" == "${GUI[1]}" ]]
-    then
-        echo "Log: Gnome Detectado!"
-        _mainMenu_GTK
+APPVERSION="v0.6"
+APPNAME="ProtonGE-installer"
+APPDIR=$(pwd)
 
-elif [[ "${DE}" == "${GUI[2]}" ]]
-    then
-        echo "Log: KDE Detectado!"
-        _mainMenu_KDE
-else
-    echo "Log: No se ha detectado el escritorio que estas usando."
-    echo "Log: Cargando menú Default"
-    _mainMenu_GTK
-fi
-}
+
+# Hotfix para archivos previamente descargados.
+# rm "${HOME}"/.local/share/ProtonGE/*.tar.gz*
 
 _check_steam_folder_proton(){
 # Se comprueba la existencia de la carpeta compatibilitytools.d
@@ -52,56 +35,47 @@ _check_steam_folder_proton(){
             echo "Carpeta encontrada."
         else
             echo "Log: Preparando la carpeta de Steam para instalar ProtonGE"
-            mkdir -p ${HOME}/.local/share/Steam/compatibilitytools.d
+            mkdir -p "${HOME}"/.local/share/Steam/compatibilitytools.d
     fi
 }
-${ProtonGE}
+
+# ${version}
 # Aquí se estable la URL de descarga correspondiente
 # con la versión de ProtonGE seleccionada.
 _check_url () {
-    if [[ "${valor0}" == "${ProtonGE}" ]]
+    if [[ "${valor0}" == "${version}" ]]
         then
-            URL=`jq -r '.ProtonGE[0].url' db.json`
-            echo "Log: La URL es: ${URL}"
-    elif [[ "${valor1}" == "${ProtonGE}" ]]
+            URL=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[0].url'`
+    elif [[ "${valor1}" == "${version}" ]]
         then
-            URL=`jq -r '.ProtonGE[1].url' db.json`
-            echo "Log: La URL es: ${URL}"
-     elif [[ "${valor2}" == "${ProtonGE}" ]]
+            URL=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[1].url'`
+     elif [[ "${valor2}" == "${version}" ]]
         then
-            URL=`jq -r '.ProtonGE[2].url' db.json`
-            echo "Log: La URL es: ${URL}"
-    elif [[ "${valor3}" == "${ProtonGE}" ]]
+            URL=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[2].url'`
+    elif [[ "${valor3}" == "${version}" ]]
         then
-            URL=`jq -r '.ProtonGE[3].url' db.json`
-            echo "Log: La URL es: ${URL}"
-    elif [[ "${valor4}" == "${ProtonGE}" ]]
+            URL=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[3].url'`
+    elif [[ "${valor4}" == "${version}" ]]
         then
-            URL=`jq -r '.ProtonGE[4].url' db.json`
-            echo "Log: La URL es: ${URL}"
-    elif [[ "${valor5}" == "${ProtonGE}" ]]
+            URL=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[4].url'`
+    elif [[ "${valor5}" == "${version}" ]]
         then
-            URL=`jq -r '.ProtonGE[5].url' db.json`
-            echo "Log: La URL es: ${URL}"
-    elif [[ "${valor6}" == "${ProtonGE}" ]]
+            URL=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[5].url'`
+    elif [[ "${valor6}" == "${version}" ]]
         then
-            URL=`jq -r '.ProtonGE[6].url' db.json`
-            echo "Log: La URL es: ${URL}"
-    elif [[ "${valor7}" == "${ProtonGE}" ]]
+            URL=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[6].url'`
+    elif [[ "${valor7}" == "${version}" ]]
         then
-            URL=`jq -r '.ProtonGE[7].url' db.json`
-            echo "Log: La URL es: ${URL}"
-    elif [[ "${valor8}" == "${ProtonGE}" ]]
+            URL=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[7].url'`
+    elif [[ "${valor8}" == "${version}" ]]
         then
-            URL=`jq -r '.ProtonGE[8].url' db.json`
-            echo "Log: La URL es: ${URL}"
-    elif [[ "${valor9}" == "${ProtonGE}" ]]
+            URL=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[8].url'`
+    elif [[ "${valor9}" == "${version}" ]]
         then
-            URL=`jq -r '.ProtonGE[9].url' db.json`
-            echo "Log: La URL es: ${URL}"
+            URL=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[9].url'`
     else
         echo "Log: Error La princesa está en otro castillo."
-        break
+        exit 
     fi
 }
 
@@ -133,7 +107,7 @@ _install(){
     # Comprueba que existe la carpeta de Steam
     if [ -d "${HOME}/.steam" ];
         then
-            echo "Steam detectado."
+            echo "Log: Steam detectado!"
             STEAM="true"
         else
             STEAM="false"
@@ -142,7 +116,7 @@ _install(){
     # Comprueba que existe la carpeta de Lutris.
     if [ -d "${HOME}/.local/share/lutris" ];
         then
-            echo "Lutris detectado."
+            echo "Log: Lutris detectado!"
             LUTRIS="true"
         else
             LUTRIS="false"
@@ -155,7 +129,6 @@ _install(){
     # Si existen ambos, muestra una ventana para instalar ambos.
     if [[ ${STEAM} == true ]] && [[ ${LUTRIS} == true ]]
         then
-            echo "¿Quieres instalarlo en Ambos?"
             _install_All_GTK
     elif [[ ${STEAM} == true ]] && [[ ${LUTRIS} == false ]]
         then
@@ -167,38 +140,10 @@ _install(){
         _install_Lutris_GTK
     else
         echo " no tienes ni Steam ni Lutris instalado, Salir"
-        break
+        exit 1
     fi
 }
 
-_install_Lutris_GTK(){
-    echo "Solo lutris"
-}
-
-_install_Steam_GTK(){
-    echo "solo steam"
-}
-
-_install_All_GTK(){
-    componente=$(zenity --list \
-                    --title="ProtonGE-${ProtonGE} Installer" \
-                    --height=300 \
-                    --width=200 \
-                    --ok-label="Aceptar" \
-                    --cancel-label="Cancelar" \
-                    --text="Has Seleccionado ProtonGE-${ProtonGE}\n Selecciona donde quieres instalarlo." \
-                    --checklist \
-                    --column="" \
-                    --column="Opciones:" \
-                    1 "Steam" 2 "Lutris")
-ans=$?
-if [ $ans -eq 0 ]
-then
-    echo "Has elegido: ${componente}"
-else
-    echo "No has elegido ningún componente"
-fi 
-}
 # Menu Terminal
 _mainMenu_Terminal(){
     echo "Aquí va la interfaz para la terminal"
@@ -209,15 +154,15 @@ _mainMenu_KDE(){
     echo "Aquí va la interfaz de KDE"
 }
 
-# Menu por defecto (Gnome, Cinnamon, LXDE or Unknow DE)
+# MENU PRINCIPAL GTK (Gnome, Cinnamon, LXDE or Unknow DE)
 _mainMenu_GTK(){
 componente=$(zenity --list \
-                    --title="ProtonGE Installer" \
+                    --title=" ${APPNAME} - ${APPVERSION} " \
                     --height=300 \
                     --width=100 \
                     --ok-label="Aceptar" \
                     --cancel-label="Cancelar" \
-                    --text="Bienvenidos a ProtonGE Installer \nSelecciona la versión que quieres instalar" \
+                    --text="Bienvenidos a <b>ProtonGE Installer</b>. \n\nSelecciona la versión que quieres instalar" \
                     --radiolist \
                     --column="" \
                     --column="ProtonGE Release" \
@@ -225,15 +170,154 @@ componente=$(zenity --list \
 ans=$?
 if [ $ans -eq 0 ]
 then
-    ProtonGE="${componente}"
-    echo "Log: Seleccionado ProtonGE: ${ProtonGE}"
+    version="${componente}"
+    echo "Log: Has seleccionado ProtonGE-${version}"
     _check_url
     _install
 else
-    echo "Log: Saliendo."
+    echo "Log: Cancelado."
 fi
 }
 
+# MENU SELECCION GTK DE INSTALACION | STEAM | LUTRIS
+_install_All_GTK(){
+    selectInstall=$(zenity --list \
+                    --title=" ${APPNAME} - ${APPVERSION} " \
+                    --height=300 \
+                    --width=200 \
+                    --ok-label="Aceptar" \
+                    --cancel-label="Cancelar" \
+                    --text="<b>ProtonGE-${version}</b> seleccionado.\n\n Elije donde quieres instalarlo ahora." \
+                    --checklist \
+                    --column="" \
+                    --column="Opciones:" \
+                    1 "Steam" 2 "Lutris")
+ans=$?
+if [ $ans -eq 0 ]
+then
+    echo "Has elegido: ${selectInstall}"
+    _install_InitProcess
+else
+    echo "No has elegido ningún componente"
+fi 
+}
+
+# PROCESO DE INSTALACION DE STEAM | LUTRIS
+_install_InitProcess(){
+    if [ ${selectInstall} == "Steam|Lutris" ] 
+    then
+        _download
+        _install_Steam
+        _install_Lutris
+    elif [ ${selectInstall} == "Steam" ]
+    then
+        _download
+        _install_Steam
+    elif [ ${selectInstall} == "Lutris" ]
+    then
+        _download
+        _install_Lutris
+    else
+        echo "No hay nada que hacer, Salir."
+    fi
+}
+
+_download_check_folfer(){
+        echo "Descargando"
+    if [ -d "${HOME}/.local/share/ProtonGE" ];
+    then
+        echo ""
+    else
+        echo "Log: Preparando la carpeta de ProtonGE"
+        mkdir -p ${HOME}/.local/share/ProtonGE/
+    fi
+}
+
+_download_proton(){
+    # Proceso de descarga
+    cd "${HOME}"/.local/share/ProtonGE/
+    rm "${HOME}"/.local/share/ProtonGE/*.tar.gz
+    wget "${URL}" | [[ "$?" != "0" ]] && pkill wget && rm "${HOME}/.local/share/ProtonGE/"*.tar.gz && exit 1
+}
+
+_download_extract(){
+    tar -xvf Proton-"${version}".tar.gz
+    # Clean folder
+    rm "${HOME}"/.local/share/ProtonGE/*.tar.gz*
+    cd "${APPDIR}"
+}
+
+_download_link_steam(){
+    ln -s "${HOME}"/.local/share/ProtonGE/Proton-"${version}" "${HOME}"/.local/share/Steam/compatibilitytools.d/Proton-"${version}" 
+}
+
+_download_link_lutris(){
+    ln -s "${HOME}"/.local/share/ProtonGE/Proton-"${version}"/files "${HOME}"/.local/share/lutris/runners/wine/Proton-"${version}" 
+}
+
+_download(){
+    echo "Descargando"
+    
+(
+sleep 1
+echo "10"
+echo "#\n\n Preparando la descarga"; _download_check_folfer; sleep 1
+echo "20"
+echo "# Descargando ProtonGE... \n\n Esto puede tardar un tiempo..."; _download_proton; sleep 1
+echo "30"
+echo "# \n\n Extrayendo ProtonGE..."; _download_extract; sleep 1
+echo "50"
+echo "# \n\n Creando enlace de Steam con ProtonGE..."; _download_link_steam; sleep 1
+echo "70"
+echo "# \n\n Creando enlace de Lutris con ProtonGE..."; _download_link_lutris; sleep 1
+echo "90"
+echo "#\n\n  ¡Instalación Finalizada!"
+echo "100"
+) |
+zenity --progress \
+  --title=" ${APPNAME} - ${APPVERSION} " \
+  --height=100 \
+  --width=300 \
+  --text="\n\n Iniciando..." \
+  --percentage=0
+
+ans=$?
+if [ $ans -eq 0 ]
+then
+    exit 1
+else
+   pkill wget
+   rm "${HOME}"/.local/share/ProtonGE/*.tar.gz*
+fi
+}
+
+# Comprobar si tienes KDE o Gnome
+# Proceso de Identificación del escritorio
+# Esto determinará si usar Zenity, Dialog o Kdialog.
+_check_session(){
+if [[ "${DE}" == "${GUI[0]}" ]]
+    then
+        echo "Log: Modo Terminal!"
+        _mainMenu_Terminal
+elif [[ "${DE}" == "${GUI[1]}" ]]
+    then
+        echo "Log: Gnome Detectado!"
+        _mainMenu_GTK
+
+elif [[ "${DE}" == "${GUI[2]}" ]]
+    then
+        echo "Log: KDE Detectado!"
+        _mainMenu_KDE
+else
+    echo "Log: No se ha detectado el escritorio que estas usando."
+    echo "Log: Cargando menú Default"
+    _mainMenu_GTK
+fi
+}
+
+# Determina el escritorio que estás usando
+DE=$(echo "${DESKTOP_SESSION}")
+GUI=('terminal' 'gnome-xorg' 'plasmawayland' 'lxqt' )
 
 case $1 in
     -g)

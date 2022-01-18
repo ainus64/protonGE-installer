@@ -4,15 +4,15 @@
 # Author: Ainus64 (Mis Juegos En Linux)
 # Contacto: ainus64@gmx.com
 #
-# Dependencias: dialog, zenity, kdialog
+# Dependencias: jq, dialog, zenity, kdialog
 #
 # Cosas por arreglar:
-#                   [ ] Fix para los archivos descargados cancelados.
+#                   [X] Fix para los archivos descargados cancelados.
 #                   [X] Fix Carpeta de Steam - ProtonGE no carga enlazandolo a otra carpeta.
 #                       Hay que arreglar la ubicación de Proton, una Alternativa es crearla directamente en Steam
 #                       y vincular con un enlace la carpeta para Lutris, ya que en Lutris sí funciona la vinculación.
 #                   [X] Hay que reescribir el código mejor para ordenarlo, creando un condicional para detectar el escritorio y cargar la GUI.
-#                   [ ] Hay que reescribir las variables de la descarga, optimizar el código.
+#                   [X] Hay que reescribir las variables de la descarga, optimizar el código.
 #                       Sugerencia: no hace falta añadir la URL a la base de datos, con el nombre de Proton se puede predecir la URl.
 #                                   Además de optimizar el código, se mejoraría la velocidad de actualización de la Base de Datos al omitir la URL.
 #                                   Con esto se puede incluir el MD5 para las comprobaciónes de los archivos temporales desvargados.
@@ -25,31 +25,62 @@
 #                   [ ] 1.3 Corrección de Bugs
 #
 
-# Carga la base de datos.
-valor0=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[0].release'`
-valor1=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[1].release'`
-valor2=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[2].release'`
-valor3=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[3].release'`
-valor4=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[4].release'`
-valor5=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[5].release'`
-valor6=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[6].release'`
-valor7=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[7].release'`
-valor8=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[8].release'`
-valor9=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[9].release'`
-# Variables de entorno
-APPVERSION="v0.8"
-APPNAME="ProtonGE-installer"
-APPDIR=$(pwd)
-tmp="/tmp"
+
+# Variables Globales
+    APPVERSION="v0.8.5"
+    APPNAME="ProtonGE-installer"
+    APPDIR=$(pwd)
+    tmp="/tmp"
+
+if [ -f /usr/bin/jq ]; then
+        echo ""
+    else
+        echo "Log: No se ha encontrado jq instalado en tu sistema, dependencias incumplidas."
+        exit
+fi
+
+if [ -f db.json ]; then
+        echo "Cargando la Base de datos local."
+        valor0=`jq -r '.ProtonGE[0].release' db.json`
+        valor1=`jq -r '.ProtonGE[1].release' db.json`
+        valor2=`jq -r '.ProtonGE[2].release' db.json`
+        valor3=`jq -r '.ProtonGE[3].release' db.json`
+        valor4=`jq -r '.ProtonGE[4].release' db.json`
+        valor5=`jq -r '.ProtonGE[5].release' db.json`
+        valor6=`jq -r '.ProtonGE[6].release' db.json`
+        valor7=`jq -r '.ProtonGE[7].release' db.json`
+        valor8=`jq -r '.ProtonGE[8].release' db.json`
+        valor9=`jq -r '.ProtonGE[9].release' db.json`
+    else
+        echo "Cargando la Base de datos de Internet..."
+        valor0=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[0].release'`
+        valor1=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[1].release'`
+        valor2=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[2].release'`
+        valor3=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[3].release'`
+        valor4=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[4].release'`
+        valor5=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[5].release'`
+        valor6=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[6].release'`
+        valor7=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[7].release'`
+        valor8=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[8].release'`
+        valor9=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[9].release'`
+fi
+
+
+
+    # Comprueba que existe la carpeta de Steam
+    if [ -f "${HOME}/.steam" ]; then
+            echo "Log: Steam detectado!"
+            STEAM="true"
+        else
+            STEAM="false"
+    fi
+
 
 # MENU PRINCIPAL GTK (Gnome, Cinnamon, LXDE or Unknow DE)
 _mainMenu(){
     _checkSteam
-# Define la sesión de Escritorio que se está ejecutando
-desktop_session=$(echo "${DESKTOP_SESSION}")
 
-if [[ "${desktop_session}" == "gnome-xorg" ]] || [[ "${desktop_session}" == "gnome" ]]; then
-        echo "Log: Gnome Detectado!"
+if [[ "${desktop_session}" == "GTK" ]]; then
         ####################################################################
         # Zenity Code for Main Menu GTK        
         componente=$(zenity --list --title=" ${APPNAME} - ${APPVERSION} " --height=300 --width=100 --ok-label="Aceptar" --cancel-label="Cancelar" \
@@ -59,7 +90,7 @@ if [[ "${desktop_session}" == "gnome-xorg" ]] || [[ "${desktop_session}" == "gno
                         ans=$?
                         if [ $ans -eq 0 ]; then
                             Release="${componente}"
-                            echo "Log: Has seleccionado ProtonGE-${Release}"
+                            echo "Log: Has seleccionado Proton-${Release}"
                                 _menu_download
                                 _menuInstall
                         else
@@ -74,17 +105,14 @@ if [[ "${desktop_session}" == "gnome-xorg" ]] || [[ "${desktop_session}" == "gno
                                         echo "No quiere Salir"
                                         _mainMenu
                         fi
-        
-        # Busca la versión de proton seleccionada y le asigna la URL
 
 fi
 # End Zenity Code for GTK
 ####################################################################
 
-elif [[ "${desktop_session}" == "plasmawayland" ]] || [[ "${desktop_session}" == "kde" ]] || [[ "${desktop_session}" == "lxqt" ]]; then
-        echo "Log: KDE Detectado!"
+elif [[ "${desktop_session}" == "QT" ]]; then
         _mainMenu_KDE
-elif [[ "${desktop_session}" == "terminal" ]]; then
+elif [[ "${desktop_session}" == "CLI" ]]; then
         echo "Log: Modo Terminal!"
         _mainMenu_Terminal
 else
@@ -92,19 +120,8 @@ else
 fi
 } #### <- End MainMenu ###
 
-_menu_download(){
-    
-    
-    # Prepara el directorio de descarga
-    mkdir -p "${tmp}"/ProtonGE
-    cd "${tmp}"/ProtonGE
-    
-    # Fix posibles descargas anteriores
-    rm "${tmp}"/ProtonGE/*.tar.gz
-    
-    desktop_session=$(echo "${DESKTOP_SESSION}")
-
-if [[ "${desktop_session}" == "gnome-xorg" ]] || [[ "${desktop_session}" == "gnome" ]]; then
+_menu_download(){   
+if [[ "${desktop_session}" == "GTK" ]]; then
                     # Menu Download GTK
                     echo "Descargando" 
                     (
@@ -131,21 +148,21 @@ if [[ "${desktop_session}" == "gnome-xorg" ]] || [[ "${desktop_session}" == "gno
                 # End Download code
                 ####################################
 
-elif [[ "${desktop_session}" == "plasmawayland" ]] || [[ "${desktop_session}" == "kde" ]] || [[ "${desktop_session}" == "lxqt" ]]; then
+elif [[ "${desktop_session}" == "QT" ]]; then
         ####################################################################
         # kdialog QT
         echo ""
         # End Kdialog QT
         ####################################################################
+elif [[ "${desktop_session}" == "CLI" ]]; then
+        echo ""
 else
-    echo "Log: No se ha detectado el escritorio que estas usando, Usar CLI"
+    echo "Log: No se ha detectado el escritorio que estas usando."
 fi
 } #### <- End MainMenu ###
 
 _menuInstall(){
-    desktop_session=$(echo "${DESKTOP_SESSION}")
-
-if [[ "${desktop_session}" == "gnome-xorg" ]] || [[ "${desktop_session}" == "gnome" ]]; then
+if [[ "${desktop_session}" == "GTK" ]]; then
             if [[ ${STEAM} == true ]] && [[ ${LUTRIS} == true ]]; then
                 ##########################################
                 # Menu Install Steam And Lutris GTK
@@ -197,13 +214,13 @@ if [[ "${desktop_session}" == "gnome-xorg" ]] || [[ "${desktop_session}" == "gno
             fi
             # End Installer Code
             ####################################################       
-elif [[ "${desktop_session}" == "plasmawayland" ]] || [[ "${desktop_session}" == "kde" ]] || [[ "${desktop_session}" == "lxqt" ]]; then
+elif [[ "${desktop_session}" == "QT" ]]; then
         ####################################################################
         # kdialog QT
         echo ""
         # End Kdialog QT
         ####################################################################
-elif [[ "${desktop_session}" == "terminal" ]]; then
+elif [[ "${desktop_session}" == "CLI" ]]; then
         ####################################################################
         # Dialog CLI        
         echo ""
@@ -215,12 +232,55 @@ fi
 } #### <- End MainMenu ###
 
 _downloadProton(){
-    wget https://github.com/GloriousEggroll/proton-ge-custom/releases/download/"${Release}"/Proton-"${Release}".tar.gz
+    if [ -d "${tmp}"/ProtonGE ]; then
+        echo ""
+    else
+        mkdir -p "${tmp}"/ProtonGE
+    fi
+    
+    cd "${tmp}"/ProtonGE
+    # Fix posibles descargas anteriores
+    if [ -f "${tmp}"/ProtonGE/Proton-"${Release}".tar.gz ]; then
+                if [ -f "${tmp}"/ProtonGE/Proton-"${Release}".sha512sum ]; then
+                    rm "${tmp}"/ProtonGE/Proton-"${Release}".sha512sum
+                else
+                    echo ""
+                fi
+    
+            wget https://github.com/GloriousEggroll/proton-ge-custom/releases/download/"${Release}"/Proton-"${Release}".sha512sum
+
+            sumCheck=$(cat Proton-"${Release}".sha512sum)
+            sumFile=$(sha512sum Proton-"${Release}".tar.gz)
+
+                if [ "${sumCheck}" == "${sumFile}" ]; then
+	                echo "La descarga es correcta"
+	            else
+	                echo "Log: Limpiando cache..."
+                    rm "${tmp}"/ProtonGE/Proton-"${Release}".tar.gz
+                fi
+    else
+        echo ""
+    fi
+    
     wget https://github.com/GloriousEggroll/proton-ge-custom/releases/download/"${Release}"/Proton-"${Release}".sha512sum
+    wget https://github.com/GloriousEggroll/proton-ge-custom/releases/download/"${Release}"/Proton-"${Release}".tar.gz
+
+    sumCheck=$(cat Proton-"${Release}".sha512sum)
+    sumFile=$(sha512sum Proton-"${Release}".tar.gz)
+
+    if [ "${sumCheck}" == "${sumFile}" ]; then
+	        echo "La descarga es correcta"
+	else
+	        echo "Log: Limpiando cache..."
+            rm "${tmp}"/ProtonGE/Proton-"${Release}".tar.gz
+            rm "${tmp}"/ProtonGE/Proton-"${Release}".sha512sum
+            _msgCancel
+    fi
 }
+
 _extractProton(){
-    # Comprobar
-    # tar -xvf Proton-"${Release}".tar.gz
+    cd "${tmp}"/ProtonGE
+    tar -xvf Proton-"${Release}".tar.gz
 }
  
 # Instala Proton
@@ -249,29 +309,23 @@ _installProton(){
                 exit
         fi 
 
-
-    # Clean folder
-    rm "${tmp}"/ProtonGE/*.tar.gz*
-    
     _menu_finish
 }
 
 _menu_finish(){
-    desktop_session=$(echo "${DESKTOP_SESSION}")
-
-if [[ "${desktop_session}" == "gnome-xorg" ]] || [[ "${desktop_session}" == "gnome" ]]; then
+if [[ "${desktop_session}" == "GTK" ]]; then
         ####################################################################
         # Zenity GTK
         zenity --info --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="Instalación completada!"
         # End Zenity GTK
         ####################################################################            
-elif [[ "${desktop_session}" == "plasmawayland" ]] || [[ "${desktop_session}" == "kde" ]] || [[ "${desktop_session}" == "lxqt" ]]; then
+elif [[ "${desktop_session}" == "QT" ]]; then
         ####################################################################
         # kdialog QT
         echo ""
         # End Kdialog QT
         ####################################################################
-elif [[ "${desktop_session}" == "terminal" ]]; then
+elif [[ "${desktop_session}" == "CLI" ]]; then
         ####################################################################
         # Dialog CLI        
         echo ""
@@ -286,21 +340,19 @@ _msgCancel(){
     pkill wget
     rm "${HOME}"/.local/share/ProtonGE/*.tar.gz*
     
-    desktop_session=$(echo "${DESKTOP_SESSION}")
-
-if [[ "${desktop_session}" == "gnome-xorg" ]] || [[ "${desktop_session}" == "gnome" ]]; then
+if [[ "${desktop_session}" == "GTK" ]]; then
         ####################################################################
         # Zenity GTK
         zenity --error --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="Se ha cancelado el proceso"
         # End Zenity GTK
         ####################################################################            
-elif [[ "${desktop_session}" == "plasmawayland" ]] || [[ "${desktop_session}" == "kde" ]] || [[ "${desktop_session}" == "lxqt" ]]; then
+elif [[ "${desktop_session}" == "QT" ]]; then
         ####################################################################
         # kdialog QT
         echo ""
         # End Kdialog QT
         ####################################################################
-elif [[ "${desktop_session}" == "terminal" ]]; then
+elif [[ "${desktop_session}" == "CLI" ]]; then
         ####################################################################
         # Dialog CLI        
         echo ""
@@ -312,19 +364,19 @@ fi
 } #### <- End MainMenu ###
 
 _msgNothing(){
-    if [[ "${desktop_session}" == "gnome-xorg" ]] || [[ "${desktop_session}" == "gnome" ]]; then
+    if [[ "${desktop_session}" == "GTK" ]]; then
         ####################################################################
         # Zenity GTK
         zenity --error --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="No tienes Lutris ni Steam Instalado, se ha cancelado el proceso."
         # End Zenity GTK
         ####################################################################            
-elif [[ "${desktop_session}" == "plasmawayland" ]] || [[ "${desktop_session}" == "kde" ]] || [[ "${desktop_session}" == "lxqt" ]]; then
+elif [[ "${desktop_session}" == "QT" ]]; then
         ####################################################################
         # kdialog QT
         echo ""
         # End Kdialog QT
         ####################################################################
-elif [[ "${desktop_session}" == "terminal" ]]; then
+elif [[ "${desktop_session}" == "CLI" ]]; then
         ####################################################################
         # Dialog CLI        
         echo ""
@@ -353,6 +405,30 @@ _checkSteam(){
     fi
 }
 
+_LinuxDependencias(){
+if [[ "${desktop_session}" == "gnome-xorg" ]] || [[ "${desktop_session}" == "gnome" ]]; then
+        ####################################################################
+        # Zenity GTK
+        zenity --info --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="Instalación completada!"
+        # End Zenity GTK
+        ####################################################################            
+elif [[ "${desktop_session}" == "plasmawayland" ]] || [[ "${desktop_session}" == "kde" ]] || [[ "${desktop_session}" == "lxqt" ]]; then
+        ####################################################################
+        # kdialog QT
+        echo ""
+        # End Kdialog QT
+        ####################################################################
+elif [[ "${desktop_session}" == "CLI" ]]; then
+        ####################################################################
+        # Dialog CLI        
+        echo ""
+        # End Dialog CLI
+        ####################################################################
+else
+    echo "Log: No se ha detectado el escritorio que estas usando."
+fi
+    /usr/bin/zenity
+}
 
 # Texto de información o ayuda del programa, Sólo se mostrará si se ejecuta por terminal # hay que arreglar el idioma mostrado.
 _help(){
@@ -371,4 +447,19 @@ _help(){
 EOL
 }
 
-_mainMenu
+if [[ "${DESKTOP_SESSION}" == "gnome-xorg" ]] || [[ "${DESKTOP_SESSION}" == "gnome" ]]; then
+        desktop_session="GTK"
+        if [ -f /usr/bin/zenity ]; then
+            _mainMenu
+        else
+            echo "Log: No se ha encontrado zenity en el sistema, dependencias incumplidas."
+            exit
+        fi
+
+    elif [[ "${desktop_session}" == "plasmawayland" ]] || [[ "${desktop_session}" == "kde" ]] || [[ "${desktop_session}" == "lxqt" ]]; then
+        desktop_session="QT"
+    elif [[ "${desktop_session}" == "CLI" ]]; then
+        desktop_session="CLI"
+else
+    echo "Log: No se ha detectado el escritorio que estas usando."
+fi

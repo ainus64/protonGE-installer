@@ -4,7 +4,7 @@
        Contacto: ainus64@gmx.com
        github: https://github.com/ainus64/protonGE-installer
 
-   *** ¿Que es ProtonGE-installer? ***
+    > ¿Que es ProtonGE-installer?
  
        Es un programa que facilita la instalación de GloriousEggroll/proton-ge-custom en nuestro sistema
        Proton es una versión mejorada de Wine distribuida por Valve y usada en Steam para ejecutar juegos de Windows en Linux.
@@ -14,7 +14,7 @@
 
        ProtonGE-Installer facilita la descarga de estas versiones de Proton, y las instala en Steam y Lutris de forma sencilla.
 
-   *** Como usar ProtonGEInstaller ***
+    > Como usar ProtonGEInstaller
 
        Hay que instalar las siguientes dependencias
 

@@ -27,7 +27,7 @@
 #                   [ ] Arreglar las variables valor, creando una secuencia incremental.
 
 # Variables Globales
-    APPVERSION="v0.9.0"
+    APPVERSION="v1.0.0"
     APPNAME="ProtonGE-installer"
     APPDIR=$(pwd)
     tmp="/tmp"
@@ -176,7 +176,7 @@ _menu_download(){
                                     if [ $ans -eq 0 ]; then
                                         if [[ "${installedChoice}" == "Re-instalar" ]]; then
                                                 rm -rf "${HOME}"/.local/share/Steam/compatibilitytools.d/Proton-"${Release}"
-                                                    if [ -f "${HOME}"/.local/share/lutris/runners/wine/Proton-"${Release}"]; then
+                                                    if [ -f "${HOME}"/.local/share/lutris/runners/wine/Proton-"${Release}" ]; then
                                                         rm "${HOME}"/.local/share/lutris/runners/wine/Proton-"${Release}"
                                                     else
                                                         echo ""
@@ -312,9 +312,7 @@ _downloadProton(){
                 else
                     echo ""
                 fi
-    
             wget https://github.com/GloriousEggroll/proton-ge-custom/releases/download/"${Release}"/Proton-"${Release}".sha512sum
-
             sumCheck=$(cat Proton-"${Release}".sha512sum)
             sumFile=$(sha512sum Proton-"${Release}".tar.gz)
 
@@ -323,25 +321,25 @@ _downloadProton(){
 	            else
 	                echo "LOG: Limpiando cache..."
                     rm "${tmp}"/ProtonGE/Proton-"${Release}".tar.gz
+                    wget https://github.com/GloriousEggroll/proton-ge-custom/releases/download/"${Release}"/Proton-"${Release}".tar.gz
+
                 fi
     else
         echo ""
     fi
     
-    wget https://github.com/GloriousEggroll/proton-ge-custom/releases/download/"${Release}"/Proton-"${Release}".sha512sum
-    wget https://github.com/GloriousEggroll/proton-ge-custom/releases/download/"${Release}"/Proton-"${Release}".tar.gz
-
-    sumCheck=$(cat Proton-"${Release}".sha512sum)
-    sumFile=$(sha512sum Proton-"${Release}".tar.gz)
-
-    if [ "${sumCheck}" == "${sumFile}" ]; then
-	        echo "La descarga es correcta"
-	else
-	        echo "LOG: Limpiando cache..."
-            rm "${tmp}"/ProtonGE/Proton-"${Release}".tar.gz
-            rm "${tmp}"/ProtonGE/Proton-"${Release}".sha512sum
-            _msgCancel
-    fi
+    
+    
+#   sumCheck=$(cat Proton-"${Release}".sha512sum)
+#    sumFile=$(sha512sum Proton-"${Release}".tar.gz)
+# if [ "${sumCheck}" == "${sumFile}" ]; then
+#	        echo "La descarga es correcta"
+#	else
+#	        echo "LOG: Limpiando cache..."
+#            rm "${tmp}"/ProtonGE/Proton-"${Release}".tar.gz
+#            rm "${tmp}"/ProtonGE/Proton-"${Release}".sha512sum
+#            _msgCancel
+#    fi
 }
 
 _extractProton(){
@@ -415,7 +413,7 @@ if [[ "${desktop_session}" == "GTK" ]]; then
         msgUninstall=$(zenity --info --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="¡Desinstalación completada!")
                 ans=$?
                     if [ $ans -eq 0 ]; then
-                            exit
+                            _mainMenu
                         else
                             exit
                         fi

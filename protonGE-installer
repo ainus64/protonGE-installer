@@ -19,7 +19,7 @@
 #                   [X] Hay que escribir una funcion que detecte si la versión de ProtonGE que has seleccionado ya está instalado.
 #                       En tal caso hay que sugerir si quieres eliminarla para proceder a reinstalarla o Cancelar el proceso.
 #                   [ ] Hay que cambiar todos los textos al Inglés para internacionalizarlo.
-#                   [ ] 1.0 Finalizar el programa con Zenity
+#                   [X] 1.0 Finalizar el programa con Zenity
 #                   [ ] 1.1 Hay que escribir el código de la interfaz por terminal
 #                   [ ] 1.2 Hay que escribir el código para la interfaz de Kdialog
 #                   [ ] 1.3 Corrección de Bugs

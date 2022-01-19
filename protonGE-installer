@@ -1,10 +1,10 @@
 #!/bin/bash
 # Program: ProtonGEInstaller
-# version: 0.9.0
+# version: 1.0.1
 # Author: Ainus64 (Mis Juegos En Linux)
 # Contacto: ainus64@gmx.com
 #
-# Dependencias: jq, whiptail, zenity, kdialog
+# Dependencias: jq, zenity
 #
 # Cosas por arreglar:
 #                   [X] Fix para los archivos descargados cancelados.
@@ -27,7 +27,7 @@
 #                   [ ] Arreglar las variables valor, creando una secuencia incremental.
 
 # Variables Globales
-    APPVERSION="v1.0.0"
+    APPVERSION="v1.0.1"
     APPNAME="ProtonGE-installer"
     APPDIR=$(pwd)
     tmp="/tmp"
@@ -512,7 +512,8 @@ if [[ "${DESKTOP_SESSION}" == "gnome" ]] || [[ "${DESKTOP_SESSION}" == "cinnamon
         echo "LOG: Cargando la interfaz GTK"
 
     elif [[ "${desktop_session}" == "plasma" ]] || [[ "${desktop_session}" == "plasmawayland" ]] || [[ "${desktop_session}" == "lxqt" ]]; then
-        desktop_session="QT"
+        # desktop_session="QT" --Hotfix para el escritorio de Plasma
+        desktop_session="GTK"
         echo "LOG: Cargando la interfaz QT"
     elif [[ "${desktop_session}" == "CLI" ]]; then
         echo "LOG: Cargando la interfaz CLI"

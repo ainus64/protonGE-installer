@@ -1,9 +1,3 @@
-# protonGE-installer
-       Programa: ProtonGEInstaller
-       Autor: Ainus64 (Mis Juegos En Linux)
-       Contacto: ainus64@gmx.com
-       github: https://github.com/ainus64/protonGE-installer
-
     > ¿Que es ProtonGE-installer?
  
        Es un programa que facilita la instalación de GloriousEggroll/proton-ge-custom en nuestro sistema

@@ -1,10 +1,10 @@
 #!/bin/bash
 # Program: ProtonGEInstaller
-# version: 0.8
+# version: 0.9.0
 # Author: Ainus64 (Mis Juegos En Linux)
 # Contacto: ainus64@gmx.com
 #
-# Dependencias: jq, dialog, zenity, kdialog
+# Dependencias: jq, whiptail, zenity, kdialog
 #
 # Cosas por arreglar:
 #                   [X] Fix para los archivos descargados cancelados.
@@ -16,7 +16,7 @@
 #                       Sugerencia: no hace falta añadir la URL a la base de datos, con el nombre de Proton se puede predecir la URl.
 #                                   Además de optimizar el código, se mejoraría la velocidad de actualización de la Base de Datos al omitir la URL.
 #                                   Con esto se puede incluir el MD5 para las comprobaciónes de los archivos temporales desvargados.
-#                   [ ] Hay que escribir una funcion que detecte si la versión de ProtonGE que has seleccionado ya está instalado.
+#                   [X] Hay que escribir una funcion que detecte si la versión de ProtonGE que has seleccionado ya está instalado.
 #                       En tal caso hay que sugerir si quieres eliminarla para proceder a reinstalarla o Cancelar el proceso.
 #                   [ ] Hay que cambiar todos los textos al Inglés para internacionalizarlo.
 #                   [ ] 1.0 Finalizar el programa con Zenity
@@ -24,23 +24,82 @@
 #                   [ ] 1.2 Hay que escribir el código para la interfaz de Kdialog
 #                   [ ] 1.3 Corrección de Bugs
 #
-
+#                   [ ] Arreglar las variables valor, creando una secuencia incremental.
 
 # Variables Globales
-    APPVERSION="v0.8.5"
+    APPVERSION="v0.9.0"
     APPNAME="ProtonGE-installer"
     APPDIR=$(pwd)
     tmp="/tmp"
 
+_checkDep(){
+# Carga la Base de datos.
+_loadDB
+
+# Detecta Steam
+    if [ -d "${HOME}/.steam" ]; then
+            echo "LOG: Steam detectado!"
+            STEAM="true"
+        else
+            STEAM="false"
+    fi
+# Detecta Lutris
+    if [ -d "${HOME}/.local/share/lutris" ]; then
+            echo "LOG: Lutris detectado!"
+            LUTRIS="true"
+        else
+            LUTRIS="false"
+    fi
+
+# Comprueba que jq esté instalado
 if [ -f /usr/bin/jq ]; then
-        echo ""
+        echo "LOG: jq [Ok] Instalado!"
     else
-        echo "Log: No se ha encontrado jq instalado en tu sistema, dependencias incumplidas."
+        echo "LOG: jq [ERROR] No se encuentra instalado."
         exit
 fi
 
+# Comprueba que Zenity esté instalado
+if [[ "${desktop_session}" == "GTK" ]]; then
+        if [ -f /usr/bin/zenity ]; then
+            echo "LOG: zenity [Ok] Instalado!"
+        else
+            echo "LOG: jq [ERROR] No se encuentra instalado."
+            exit
+        fi
+elif [[ "${desktop_session}" == "QT" ]]; then
+        if [ -f /usr/bin/zenity ]; then
+            echo "LOG: kdialog [Ok] Instalado!"
+        else
+            echo "LOG: kdialog [ERROR] No se encuentra instalado."
+            exit
+        fi
+        
+elif [[ "${desktop_session}" == "CLI" ]]; then
+        if [ -f /usr/bin/zenity ]; then
+            echo "LOG: whiptail [Ok] Instalado!"
+        else
+            echo "LOG: whiptail [ERROR] No se encuentra instalado."
+            exit
+        fi
+        
+else
+    echo "LOG: No se ha detectado el escritorio que estas usando."
+    echo "LOG: Ejecutando el programa con la interfaz por defecto"
+     if [ -f /usr/bin/zenity ]; then
+            echo "LOG: zenity [Ok] Instalado!"
+            desktop_session="GTK"
+        else
+            echo "LOG: jq [ERROR] No se encuentra instalado."
+            exit
+        fi
+fi
+    # /usr/bin/zenity
+}
+
+_loadDB(){
 if [ -f db.json ]; then
-        echo "Cargando la Base de datos local."
+        echo "LOG: Cargando la Base de datos local..."
         valor0=`jq -r '.ProtonGE[0].release' db.json`
         valor1=`jq -r '.ProtonGE[1].release' db.json`
         valor2=`jq -r '.ProtonGE[2].release' db.json`
@@ -64,25 +123,12 @@ if [ -f db.json ]; then
         valor8=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[8].release'`
         valor9=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[9].release'`
 fi
-
-
-
-    # Comprueba que existe la carpeta de Steam
-    if [ -f "${HOME}/.steam" ]; then
-            echo "Log: Steam detectado!"
-            STEAM="true"
-        else
-            STEAM="false"
-    fi
-
+}
 
 # MENU PRINCIPAL GTK (Gnome, Cinnamon, LXDE or Unknow DE)
 _mainMenu(){
-    _checkSteam
-
-if [[ "${desktop_session}" == "GTK" ]]; then
-        ####################################################################
-        # Zenity Code for Main Menu GTK        
+    
+    if [[ "${desktop_session}" == "GTK" ]]; then
         componente=$(zenity --list --title=" ${APPNAME} - ${APPVERSION} " --height=300 --width=100 --ok-label="Aceptar" --cancel-label="Cancelar" \
                         --text="Bienvenidos a <b>ProtonGE Installer</b>. \n\nSelecciona la versión que quieres instalar" \
                         --radiolist --column="" --column="ProtonGE Release" \
@@ -90,76 +136,96 @@ if [[ "${desktop_session}" == "GTK" ]]; then
                         ans=$?
                         if [ $ans -eq 0 ]; then
                             Release="${componente}"
-                            echo "Log: Has seleccionado Proton-${Release}"
+                            echo "LOG: Has seleccionado Proton-${Release}"
                                 _menu_download
-                                _menuInstall
                         else
-                            echo "Log: Cancelado."
+                            echo "LOG: Cancelado."
                             zenity --question --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="¿Estas seguro de que quieres SALIR?"
                                 ans=$?
-                                if [ $ans -eq 0 ]
-                                    then
-                                        echo "Si que quiere salir"
+                                if [ $ans -eq 0 ]; then
+                                        echo "LOG: Has salido del programa."
                                         exit
                                 else
                                         echo "No quiere Salir"
                                         _mainMenu
+                                fi
+
                         fi
 
-fi
-# End Zenity Code for GTK
-####################################################################
+    elif [[ "${desktop_session}" == "QT" ]]; then
+        _mainMenu
+    elif [[ "${desktop_session}" == "CLI" ]]; then
+        echo "LOG: Modo Terminal!"
+        _mainMenu
+    else
+        echo "LOG: No se ha detectado el escritorio que estas usando."
+    fi
+} 
 
-elif [[ "${desktop_session}" == "QT" ]]; then
-        _mainMenu_KDE
-elif [[ "${desktop_session}" == "CLI" ]]; then
-        echo "Log: Modo Terminal!"
-        _mainMenu_Terminal
-else
-    echo "Log: No se ha detectado el escritorio que estas usando."
-fi
-} #### <- End MainMenu ###
 
-_menu_download(){   
-if [[ "${desktop_session}" == "GTK" ]]; then
-                    # Menu Download GTK
-                    echo "Descargando" 
-                    (
-                    sleep 1
-                    echo "10"
-                    echo "#\n\n Preparando la descarga"; sleep 1
-                    echo "30"
-                    echo "# Descargando ProtonGE... \n\n Esto puede tardar un tiempo..."; _downloadProton; sleep 1
-                    echo "50"
-                    echo "# \n\n Creando enlace de Steam con ProtonGE..."; _extractProton; sleep 1
-                    echo "90"
-                    echo "#\n\n  ¡Descarga Finalizada!"
-                    echo "100"
-                    ) |
-                    downloadProton=$(zenity --progress --title=" ${APPNAME} - ${APPVERSION} " --height=100 --width=300 \
-                    --text="\n\n Iniciando..." --percentage=0)
+_menu_download(){  
+    if [[ "${desktop_session}" == "GTK" ]]; then
+        if [ -d "${HOME}"/.local/share/Steam/compatibilitytools.d/Proton-"${Release}" ]; then
+                # Ejecuta el Menú de desinstalación
+                echo "LOG: Proton-${Release} ya se encuentra instalado."
+                installedChoice=$(zenity --list --title=" ${APPNAME} - ${APPVERSION} " --height=300 --width=200 --ok-label="Aceptar" --cancel-label="Cancelar" \
+                                --text="Ya tienes instalado esta versión de protonGE \n\n ¿Que Deseas hacer?" \
+                                --radiolist --column="" --column="Opciones:" \
+                                1 "Re-instalar" 2 "Desinstalar" 3 "Regresar y seleccionar otra versión")
+                                    ans=$?
+                                    if [ $ans -eq 0 ]; then
+                                        if [[ "${installedChoice}" == "Re-instalar" ]]; then
+                                                rm -rf "${HOME}"/.local/share/Steam/compatibilitytools.d/Proton-"${Release}"
+                                                    if [ -f "${HOME}"/.local/share/lutris/runners/wine/Proton-"${Release}"]; then
+                                                        rm "${HOME}"/.local/share/lutris/runners/wine/Proton-"${Release}"
+                                                    else
+                                                        echo ""
+                                                    fi
+                                        elif [[ "${installedChoice}" == "Desinstalar" ]]; then
+                                            rm -rf "${HOME}"/.local/share/Steam/compatibilitytools.d/Proton-"${Release}"
+                                            _msgUninstall
+                                        elif [[ "${installedChoice}" == "Regresar y seleccionar otra versión" ]]; then
+                                            _mainMenu
+                                        else
+                                            _msgCancel
+                                        fi
+                                    fi
+        else
+                # Ejecuta el Menú de descarga
+                echo "Descargando" 
+                (
+                sleep 1
+                echo "10"
+                echo "#\n\n Preparando la descarga"; sleep 1
+                echo "30"
+                echo "# Descargando ProtonGE... \n\n Esto puede tardar varios minutos..."; _downloadProton; sleep 1
+                echo "50"
+                echo "# \n\n Extrayendo ProtonGE..."; _extractProton; sleep 1
+                echo "90"
+                echo "#\n\n  ¡Descarga Finalizada!"
+                echo "100"
+                ) |
+                downloadProton=$(zenity --progress --title=" ${APPNAME} - ${APPVERSION} " --height=100 --width=300 \
+                                --text="\n\n Iniciando..." --percentage=0)
 
-                    ans=$?
-                        if [ $ans -eq 0 ]; then
-                          echo "Log: Descarga Finalizada!"
-                        else
-                            _msgCancel
-                        fi
-                # End Download code
-                ####################################
-
-elif [[ "${desktop_session}" == "QT" ]]; then
-        ####################################################################
-        # kdialog QT
+                                ans=$?
+                                if [ $ans -eq 0 ]; then
+                                    echo "LOG: Descarga Finalizada!"
+                                    _menuInstall
+                                else
+                                    _msgCancel
+                                fi
+        fi
+    
+    elif [[ "${desktop_session}" == "QT" ]]; then
+            echo ""
+                elif [[ "${desktop_session}" == "CLI" ]]; then
         echo ""
-        # End Kdialog QT
-        ####################################################################
-elif [[ "${desktop_session}" == "CLI" ]]; then
-        echo ""
-else
-    echo "Log: No se ha detectado el escritorio que estas usando."
-fi
-} #### <- End MainMenu ###
+    else
+        echo "LOG: No se ha detectado el escritorio que estas usando."
+    fi
+}
+
 
 _menuInstall(){
 if [[ "${desktop_session}" == "GTK" ]]; then
@@ -210,7 +276,7 @@ if [[ "${desktop_session}" == "GTK" ]]; then
                 # End code Install Solo Steam
                 ##########################################
             else
-                _msgNothing
+                _msgNoSteam
             fi
             # End Installer Code
             ####################################################       
@@ -227,9 +293,9 @@ elif [[ "${desktop_session}" == "CLI" ]]; then
         # End Dialog CLI
         ####################################################################
 else
-    echo "Log: No se ha detectado el escritorio que estas usando."
+    echo "LOG: No se ha detectado el escritorio que estas usando."
 fi
-} #### <- End MainMenu ###
+} 
 
 _downloadProton(){
     if [ -d "${tmp}"/ProtonGE ]; then
@@ -255,7 +321,7 @@ _downloadProton(){
                 if [ "${sumCheck}" == "${sumFile}" ]; then
 	                echo "La descarga es correcta"
 	            else
-	                echo "Log: Limpiando cache..."
+	                echo "LOG: Limpiando cache..."
                     rm "${tmp}"/ProtonGE/Proton-"${Release}".tar.gz
                 fi
     else
@@ -271,7 +337,7 @@ _downloadProton(){
     if [ "${sumCheck}" == "${sumFile}" ]; then
 	        echo "La descarga es correcta"
 	else
-	        echo "Log: Limpiando cache..."
+	        echo "LOG: Limpiando cache..."
             rm "${tmp}"/ProtonGE/Proton-"${Release}".tar.gz
             rm "${tmp}"/ProtonGE/Proton-"${Release}".sha512sum
             _msgCancel
@@ -288,12 +354,12 @@ _installProton(){
     cd "${APPDIR}"
     if [ -d "${HOME}/.local/share/Steam/compatibilitytools.d" ];then
         echo ""
-    else
-        echo "Log: Preparando la carpeta de Steam para instalar ProtonGE"
+        else
+        echo "LOG: Preparando la carpeta de Steam para instalar ProtonGE"
         mkdir -p "${HOME}"/.local/share/Steam/compatibilitytools.d
     fi
 
-    echo "Has elegido: ${installChoice}"
+    # echo "Has elegido: ${installChoice}"
         if [ ${installChoice} == "Steam|Lutris" ]; then
                 mv "${tmp}"/ProtonGE/Proton-"${Release}" "${HOME}"/.local/share/Steam/compatibilitytools.d/Proton-"${Release}"
                 ln -s "${HOME}"/.local/share/Steam/compatibilitytools.d/Proton-"${Release}"/files "${HOME}"/.local/share/lutris/runners/wine/Proton-"${Release}" 
@@ -304,19 +370,27 @@ _installProton(){
                 mv "${tmp}"/ProtonGE/Proton-"${Release}" "${HOME}"/.local/share/Steam/compatibilitytools.d/Proton-"${Release}"
                 ln -s "${HOME}"/.local/share/Steam/compatibilitytools.d/Proton-"${Release}"/files "${HOME}"/.local/share/lutris/runners/wine/Proton-"${Release}" 
         else
-                echo "No hay nada que hacer, Salir."
-                rm "${tmp}"/ProtonGE/*.tar.gz*
+                echo "LOG: ERROR No hay nada que hacer, Salir..."
                 exit
         fi 
 
-    _menu_finish
+    _msgFinish
 }
 
-_menu_finish(){
+_msgFinish(){
+echo "LOG: Instalación completada!"
 if [[ "${desktop_session}" == "GTK" ]]; then
         ####################################################################
         # Zenity GTK
-        zenity --info --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="Instalación completada!"
+        msgFinish=$(zenity --info --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="Instalación completada!")
+                ans=$?
+                    if [ $ans -eq 0 ]; then
+                            
+                            exit
+                        else
+                            exit
+                        fi
+        
         # End Zenity GTK
         ####################################################################            
 elif [[ "${desktop_session}" == "QT" ]]; then
@@ -332,20 +406,46 @@ elif [[ "${desktop_session}" == "CLI" ]]; then
         # End Dialog CLI
         ####################################################################
 else
-    echo "Log: No se ha detectado el escritorio que estas usando."
+    echo "LOG: No se ha detectado el escritorio que estas usando."
 fi
-} #### <- End MainMenu ###
+} 
+
+_msgUninstall(){
+if [[ "${desktop_session}" == "GTK" ]]; then
+        msgUninstall=$(zenity --info --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="¡Desinstalación completada!")
+                ans=$?
+                    if [ $ans -eq 0 ]; then
+                            exit
+                        else
+                            exit
+                        fi
+elif [[ "${desktop_session}" == "QT" ]]; then
+        ####################################################################
+        # kdialog QT
+        echo ""
+        # End Kdialog QT
+        ####################################################################
+elif [[ "${desktop_session}" == "CLI" ]]; then
+        ####################################################################
+        # Dialog CLI        
+        echo ""
+        # End Dialog CLI
+        ####################################################################
+else
+    echo "LOG: No se ha detectado el escritorio que estas usando."
+fi
+} 
 
 _msgCancel(){
-    pkill wget
-    rm "${HOME}"/.local/share/ProtonGE/*.tar.gz*
-    
+echo "LOG: Se ha cancelado el proceso."    
 if [[ "${desktop_session}" == "GTK" ]]; then
-        ####################################################################
-        # Zenity GTK
-        zenity --error --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="Se ha cancelado el proceso"
-        # End Zenity GTK
-        ####################################################################            
+        msgCancel=$(zenity --error --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="Se ha cancelado el proceso.")
+                ans=$?
+                    if [ $ans -eq 0 ]; then
+                            exit
+                        else
+                            exit
+                        fi
 elif [[ "${desktop_session}" == "QT" ]]; then
         ####################################################################
         # kdialog QT
@@ -359,17 +459,19 @@ elif [[ "${desktop_session}" == "CLI" ]]; then
         # End Dialog CLI
         ####################################################################
 else
-    echo "Log: No se ha detectado el escritorio que estas usando."
+    echo "LOG: No se ha detectado el escritorio que estas usando."
 fi
-} #### <- End MainMenu ###
+} 
 
-_msgNothing(){
+_msgNoSteam(){
     if [[ "${desktop_session}" == "GTK" ]]; then
-        ####################################################################
-        # Zenity GTK
-        zenity --error --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="No tienes Lutris ni Steam Instalado, se ha cancelado el proceso."
-        # End Zenity GTK
-        ####################################################################            
+        msgCancel=$(zenity --error --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="No tienes Lutris ni Steam Instalado, se ha cancelado el proceso.")
+                ans=$?
+                    if [ $ans -eq 0 ]; then
+                            exit
+                        else
+                            exit
+                        fi
 elif [[ "${desktop_session}" == "QT" ]]; then
         ####################################################################
         # kdialog QT
@@ -383,52 +485,11 @@ elif [[ "${desktop_session}" == "CLI" ]]; then
         # End Dialog CLI
         ####################################################################
 else
-    echo "Log: No se ha detectado el escritorio que estas usando."
+    echo "LOG: No se ha detectado el escritorio que estas usando."
 fi
-} #### <- End MainMenu ###
+} 
 
 
-_checkSteam(){
-    # Comprueba que existe la carpeta de Steam
-    if [ -d "${HOME}/.steam" ]; then
-            echo "Log: Steam detectado!"
-            STEAM="true"
-        else
-            STEAM="false"
-    fi
-
-    if [ -d "${HOME}/.local/share/lutris" ]; then
-            echo "Log: Lutris detectado!"
-            LUTRIS="true"
-        else
-            LUTRIS="false"
-    fi
-}
-
-_LinuxDependencias(){
-if [[ "${desktop_session}" == "gnome-xorg" ]] || [[ "${desktop_session}" == "gnome" ]]; then
-        ####################################################################
-        # Zenity GTK
-        zenity --info --title=" ${APPNAME} - ${APPVERSION} " --width=250 --text="Instalación completada!"
-        # End Zenity GTK
-        ####################################################################            
-elif [[ "${desktop_session}" == "plasmawayland" ]] || [[ "${desktop_session}" == "kde" ]] || [[ "${desktop_session}" == "lxqt" ]]; then
-        ####################################################################
-        # kdialog QT
-        echo ""
-        # End Kdialog QT
-        ####################################################################
-elif [[ "${desktop_session}" == "CLI" ]]; then
-        ####################################################################
-        # Dialog CLI        
-        echo ""
-        # End Dialog CLI
-        ####################################################################
-else
-    echo "Log: No se ha detectado el escritorio que estas usando."
-fi
-    /usr/bin/zenity
-}
 
 # Texto de información o ayuda del programa, Sólo se mostrará si se ejecuta por terminal # hay que arreglar el idioma mostrado.
 _help(){
@@ -447,19 +508,21 @@ _help(){
 EOL
 }
 
-if [[ "${DESKTOP_SESSION}" == "gnome-xorg" ]] || [[ "${DESKTOP_SESSION}" == "gnome" ]]; then
+_detectDesktop(){
+if [[ "${DESKTOP_SESSION}" == "gnome" ]] || [[ "${DESKTOP_SESSION}" == "cinnamon" ]]  || [[ "${DESKTOP_SESSION}" == "mate" ]] || [[ "${DESKTOP_SESSION}" == "LXDE" ]] || [[ "${DESKTOP_SESSION}" == "budgie-desktop" ]] || [[ "${DESKTOP_SESSION}" == "gnome-xorg" ]] || [[ "${DESKTOP_SESSION}" == "gnome-classic" ]] ; then
         desktop_session="GTK"
-        if [ -f /usr/bin/zenity ]; then
-            _mainMenu
-        else
-            echo "Log: No se ha encontrado zenity en el sistema, dependencias incumplidas."
-            exit
-        fi
+        echo "LOG: Cargando la interfaz GTK"
 
-    elif [[ "${desktop_session}" == "plasmawayland" ]] || [[ "${desktop_session}" == "kde" ]] || [[ "${desktop_session}" == "lxqt" ]]; then
+    elif [[ "${desktop_session}" == "plasma" ]] || [[ "${desktop_session}" == "plasmawayland" ]] || [[ "${desktop_session}" == "lxqt" ]]; then
         desktop_session="QT"
+        echo "LOG: Cargando la interfaz QT"
     elif [[ "${desktop_session}" == "CLI" ]]; then
-        desktop_session="CLI"
-else
-    echo "Log: No se ha detectado el escritorio que estas usando."
+        echo "LOG: Cargando la interfaz CLI"
+    else
+        echo "LOG: Cargando la interfaz por defecto"
 fi
+    _checkDep
+    _mainMenu
+}
+
+_detectDesktop

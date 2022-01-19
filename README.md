@@ -19,12 +19,9 @@
                      $ sudo apt update
                      $ sudo apt install jq
 
-   > Dependencias situacionales:
-   
-      ProtonGE-installer se adapta a la interfaz que estas usando.
-      para eso instalaremos una dependencía u otra según nuestro escritorio.
+   > Dependencias:
 
-       * Gnome, Cinnamon Mate, LXDE, XFCE, otros, instalaremos Zenity:
+       * Gnome, Cinnamon Mate, LXDE, XFCE, KDE, LxQT, otros, instalaremos Zenity:
    
            Ejemplo en Ubuntu:
                    $ sudo apt update

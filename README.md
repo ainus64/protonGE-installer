@@ -35,4 +35,9 @@
                    $ sudo apt update
                    $ sudo apt install zenity
 
+   > Cómo ejecutar:
+
+                   $ chmod +x protonGE-installer
+                   $ ./protonGE-installer
+
 

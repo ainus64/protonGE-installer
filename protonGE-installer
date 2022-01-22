@@ -1,6 +1,6 @@
 #!/bin/bash
 # Program: ProtonGEInstaller
-# version: 1.0.1
+# version: 1.0.2
 # Author: Ainus64 (Mis Juegos En Linux)
 # Contacto: ainus64@gmx.com
 #
@@ -27,15 +27,13 @@
 #                   [ ] Arreglar las variables valor, creando una secuencia incremental.
 
 # Variables Globales
-    APPVERSION="v1.0.1"
+    APPVERSION="v1.0.2"
     APPNAME="ProtonGE-installer"
     APPDIR=$(pwd)
     tmp="/tmp"
+    dbUrl="https://raw.githubusercontent.com/ainus64/protonGE-installer/main/db.json"
 
 _checkDep(){
-# Carga la Base de datos.
-_loadDB
-
 # Detecta Steam
     if [ -d "${HOME}/.steam" ]; then
             echo "LOG: Steam detectado!"
@@ -95,6 +93,9 @@ else
         fi
 fi
     # /usr/bin/zenity
+
+# Carga la Base de datos.
+_loadDB
 }
 
 _loadDB(){
@@ -112,16 +113,16 @@ if [ -f db.json ]; then
         valor9=`jq -r '.ProtonGE[9].release' db.json`
     else
         echo "Cargando la Base de datos de Internet..."
-        valor0=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[0].release'`
-        valor1=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[1].release'`
-        valor2=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[2].release'`
-        valor3=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[3].release'`
-        valor4=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[4].release'`
-        valor5=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[5].release'`
-        valor6=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[6].release'`
-        valor7=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[7].release'`
-        valor8=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[8].release'`
-        valor9=`curl -s https://raw.githubusercontent.com/ainus64/protonGE-installer/main/data/db.json | jq -r '.ProtonGE[9].release'`
+        valor0=`curl -s ${dbUrl} | jq -r '.ProtonGE[0].release'`
+        valor1=`curl -s ${dbUrl} | jq -r '.ProtonGE[1].release'`
+        valor2=`curl -s ${dbUrl} | jq -r '.ProtonGE[2].release'`
+        valor3=`curl -s ${dbUrl} | jq -r '.ProtonGE[3].release'`
+        valor4=`curl -s ${dbUrl} | jq -r '.ProtonGE[4].release'`
+        valor5=`curl -s ${dbUrl} | jq -r '.ProtonGE[5].release'`
+        valor6=`curl -s ${dbUrl} | jq -r '.ProtonGE[6].release'`
+        valor7=`curl -s ${dbUrl} | jq -r '.ProtonGE[7].release'`
+        valor8=`curl -s ${dbUrl} | jq -r '.ProtonGE[8].release'`
+        valor9=`curl -s ${dbUrl} | jq -r '.ProtonGE[9].release'`
 fi
 }
 

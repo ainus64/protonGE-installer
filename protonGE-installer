@@ -326,7 +326,8 @@ _downloadProton(){
 
                 fi
     else
-        echo ""
+        echo "LOG: Iniciando wget..."
+        wget https://github.com/GloriousEggroll/proton-ge-custom/releases/download/"${Release}"/Proton-"${Release}".tar.gz
     fi
     
     
